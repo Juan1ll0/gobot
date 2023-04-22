@@ -3,9 +3,9 @@ package i2c
 import (
 	"bytes"
 	"encoding/binary"
-	"math"
-
+	"errors"
 	"gobot.io/x/gobot"
+	"math"
 )
 
 const (
@@ -164,13 +164,17 @@ func (d *BMP280Driver) initialization() (err error) {
 }
 
 func (d *BMP280Driver) rawTemp() (temp int32, err error) {
+	n := 3
 	var data []byte
 	var tp0, tp1, tp2 byte
 
-	if data, err = d.read(bmp280RegisterTempData, 3); err != nil {
+	if data, err = d.read(bmp280RegisterTempData, n); err != nil {
 		return 0, err
 	}
 	buf := bytes.NewBuffer(data)
+	if len(data) < n {
+		return 0, errors.New("Temperature disabled")
+	}
 	binary.Read(buf, binary.LittleEndian, &tp0)
 	binary.Read(buf, binary.LittleEndian, &tp1)
 	binary.Read(buf, binary.LittleEndian, &tp2)
@@ -181,11 +185,15 @@ func (d *BMP280Driver) rawTemp() (temp int32, err error) {
 }
 
 func (d *BMP280Driver) rawPressure() (press int32, err error) {
+	n := 3
 	var data []byte
 	var tp0, tp1, tp2 byte
 
-	if data, err = d.read(bmp280RegisterPressureData, 3); err != nil {
+	if data, err = d.read(bmp280RegisterPressureData, n); err != nil {
 		return 0, err
+	}
+	if len(data) < n {
+		return 0, errors.New("Pressure disabled")
 	}
 	buf := bytes.NewBuffer(data)
 	binary.Read(buf, binary.LittleEndian, &tp0)

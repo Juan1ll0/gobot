@@ -163,6 +163,18 @@ func TestBME280DriverHumidityReadError(t *testing.T) {
 	gobottest.Assert(t, hum, float32(0.0))
 }
 
+func TestBME280DriverHumidityReadError2(t *testing.T) {
+	bme280, adaptor := initTestBME280DriverWithStubbedAdaptor()
+	bme280.Start()
+
+	adaptor.i2cReadImpl = func([]byte) (int, error) {
+		return 0, errors.New("Humidity disabled")
+	}
+	hum, err := bme280.Humidity()
+	gobottest.Assert(t, err, errors.New("Humidity disabled"))
+	gobottest.Assert(t, hum, float32(0.0))
+}
+
 func TestBME280DriverHumidityNotEnabled(t *testing.T) {
 	bme280, adaptor := initTestBME280DriverWithStubbedAdaptor()
 	adaptor.i2cReadImpl = func(b []byte) (int, error) {

@@ -126,11 +126,13 @@ func (d *BME280Driver) initHumidity() (err error) {
 }
 
 func (d *BME280Driver) rawHumidity() (uint32, error) {
-	ret, err := d.read(bme280RegisterHumidityMSB, 2)
+	n := 2
+	ret, err := d.read(bme280RegisterHumidityMSB, n)
 	if err != nil {
 		return 0, err
 	}
-	if ret[0] == 0x80 && ret[1] == 0x00 {
+
+	if len(ret) < n || (ret[0] == 0x80 && ret[1] == 0x00) {
 		return 0, errors.New("Humidity disabled")
 	}
 	buf := bytes.NewBuffer(ret)

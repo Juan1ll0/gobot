@@ -122,6 +122,18 @@ func TestBMP280DriverTemperatureReadError(t *testing.T) {
 	gobottest.Assert(t, temp, float32(0.0))
 }
 
+func TestBMP280DriverTemperatureReadErrorEmpty(t *testing.T) {
+	bmp280, adaptor := initTestBMP280DriverWithStubbedAdaptor()
+	bmp280.Start()
+
+	adaptor.i2cReadImpl = func([]byte) (int, error) {
+		return 0, nil
+	}
+	temp, err := bmp280.Temperature()
+	gobottest.Assert(t, err, errors.New("Temperature disabled"))
+	gobottest.Assert(t, temp, float32(0.0))
+}
+
 func TestBMP280DriverPressureWriteError(t *testing.T) {
 	bmp280, adaptor := initTestBMP280DriverWithStubbedAdaptor()
 	bmp280.Start()
@@ -145,6 +157,18 @@ func TestBMP280DriverPressureReadError(t *testing.T) {
 	gobottest.Assert(t, err, errors.New("read error"))
 	gobottest.Assert(t, press, float32(0.0))
 }
+
+//func TestBMP280DriverPressureReadErrorEmpty(t *testing.T) {
+//	bmp280, adaptor := initTestBMP280DriverWithStubbedAdaptor()
+//	bmp280.Start()
+//
+//	adaptor.i2cReadImpl = func([]byte) (int, error) {
+//		return 0, nil
+//	}
+//	press, err := bmp280.Pressure()
+//	gobottest.Assert(t, err, errors.New("Pressure disabled"))
+//	gobottest.Assert(t, press, float32(0.0))
+//}
 
 func TestBMP280DriverSetName(t *testing.T) {
 	b := initTestBMP280Driver()

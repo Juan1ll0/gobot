@@ -128,16 +128,16 @@ func NewRobot(v ...interface{}) *Robot {
 		case string:
 			r.Name = v[i].(string)
 		case []Connection:
-			log.Println("Initializing connections...")
+			log.Println("(Juan) Initializing connections...")
 			for _, connection := range v[i].([]Connection) {
 				c := r.AddConnection(connection)
-				log.Println("Initializing connection", c.Name(), "...")
+				log.Println("(Juan) Initializing connection", c.Name(), "...")
 			}
 		case []Device:
-			log.Println("Initializing devices...")
+			log.Println("(Juan) Initializing devices...")
 			for _, device := range v[i].([]Device) {
 				d := r.AddDevice(device)
-				log.Println("Initializing device", d.Name(), "...")
+				log.Println("(Juan) Initializing device", d.Name(), "...")
 			}
 		case func():
 			r.Work = v[i].(func())
@@ -151,7 +151,7 @@ func NewRobot(v ...interface{}) *Robot {
 	r.WorkEveryWaitGroup = &sync.WaitGroup{}
 
 	r.running.Store(false)
-	log.Println("Robot", r.Name, "initialized.")
+	log.Println("(Juan) Robot", r.Name, "initialized.")
 
 	return r
 }
@@ -161,7 +161,7 @@ func (r *Robot) Start(args ...interface{}) (err error) {
 	if len(args) > 0 && args[0] != nil {
 		r.AutoRun = args[0].(bool)
 	}
-	log.Println("Starting Robot", r.Name, "...")
+	log.Println("(Juan) Starting Robot", r.Name, "...")
 	if cerr := r.Connections().Start(); cerr != nil {
 		err = multierror.Append(err, cerr)
 		log.Println(err)
@@ -176,7 +176,7 @@ func (r *Robot) Start(args ...interface{}) (err error) {
 		r.Work = func() {}
 	}
 
-	log.Println("Starting work...")
+	log.Println("(Juan) Starting work...")
 	go func() {
 		r.Work()
 		<-r.done
@@ -191,7 +191,9 @@ func (r *Robot) Start(args ...interface{}) (err error) {
 		<-c
 
 		// Stop calls the Stop method on itself, if we are "auto-running".
-		r.Stop()
+		if err = r.Stop(); err != nil {
+			return err
+		}
 	}
 
 	return
@@ -200,7 +202,7 @@ func (r *Robot) Start(args ...interface{}) (err error) {
 // Stop stops a Robot's connections and Devices
 func (r *Robot) Stop() error {
 	var result error
-	log.Println("Stopping Robot", r.Name, "...")
+	log.Println("(Juan) Stopping Robot", r.Name, "...")
 	err := r.Devices().Halt()
 	if err != nil {
 		result = multierror.Append(result, err)
